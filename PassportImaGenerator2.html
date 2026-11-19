@@ -1,0 +1,1536 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>استوديو صور المعاملات والجوازات - A4</title>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js"
+      crossorigin="anonymous"
+    ></script>
+    <style>
+      :root {
+        --bg-grad-1: #eef2ff;
+        --bg-grad-2: #f8fafc;
+        --surface: rgba(255, 255, 255, 0.92);
+        --surface-solid: #ffffff;
+        --surface-alt: #f8fafc;
+        --ink: #0f172a;
+        --ink-muted: #64748b;
+        --border: #e2e8f0;
+        --border-strong: #cbd5e1;
+
+        --brand: #4f46e5;
+        --brand-hover: #4338ca;
+        --brand-soft: #eef2ff;
+
+        --ai: #7c3aed;
+        --ai-hover: #6d28d9;
+        --ai-soft: #f5f3ff;
+
+        --jpg: #059669;
+        --jpg-hover: #047857;
+
+        --pdf: #dc2626;
+        --pdf-hover: #b91c1c;
+
+        --reset: #e11d48;
+        --reset-hover: #be123c;
+
+        --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
+        --shadow-md: 0 12px 28px -6px rgba(15, 23, 42, 0.08);
+        --shadow-lg: 0 22px 45px -12px rgba(15, 23, 42, 0.16);
+        --radius-lg: 18px;
+        --radius-md: 12px;
+        --radius-sm: 8px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        margin: 0;
+        padding: 20px 18px 40px;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 10% 0%, #e0e7ff 0%, transparent 42%),
+          radial-gradient(circle at 90% 10%, #fae8ff 0%, transparent 38%),
+          linear-gradient(180deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 100%);
+        min-height: 100vh;
+      }
+
+      .app-header {
+        max-width: 1320px;
+        margin: 0 auto 22px;
+        padding: 18px 22px;
+        border-radius: var(--radius-lg);
+        background: var(--surface);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: var(--shadow-md);
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+      }
+      .brand-wrap {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .brand-logo {
+        width: 46px;
+        height: 46px;
+        border-radius: 13px;
+        background: linear-gradient(135deg, var(--brand) 0%, var(--ai) 100%);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-size: 1.3rem;
+        box-shadow: 0 8px 18px -4px rgba(79, 70, 229, 0.45);
+      }
+      .app-header h1 {
+        margin: 0;
+        font-size: 1.3rem;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+      }
+      .app-header p {
+        margin: 3px 0 0;
+        font-size: 0.84rem;
+        color: var(--ink-muted);
+      }
+      .header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+      .pill {
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: var(--brand-soft);
+        color: var(--brand);
+        border: 1px solid #c7d2fe;
+      }
+      .pill.muted {
+        background: var(--surface-alt);
+        color: var(--ink-muted);
+        border-color: var(--border);
+      }
+
+      .grid-main {
+        max-width: 1320px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 345px 355px 1fr;
+        gap: 20px;
+        align-items: start;
+      }
+      @media (max-width: 1140px) {
+        .grid-main {
+          grid-template-columns: 1fr 1fr;
+        }
+        .preview-col {
+          grid-column: 1 / -1;
+        }
+      }
+      @media (max-width: 720px) {
+        .grid-main {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .card {
+        background: var(--surface);
+        backdrop-filter: blur(10px);
+        padding: 18px;
+        border-radius: var(--radius-lg);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        box-shadow: var(--shadow-md);
+      }
+
+      .card-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 14px;
+        font-size: 1.02rem;
+        font-weight: 800;
+        color: var(--ink);
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border);
+      }
+      .step-badge {
+        width: 24px;
+        height: 24px;
+        border-radius: 7px;
+        background: var(--brand-soft);
+        color: var(--brand);
+        font-size: 0.8rem;
+        font-weight: 800;
+        display: inline-grid;
+        place-items: center;
+      }
+
+      .section-sub {
+        margin: 15px 0 10px;
+        font-size: 0.86rem;
+        font-weight: 700;
+        color: var(--brand);
+        padding-top: 12px;
+        border-top: 1px dashed var(--border-strong);
+      }
+
+      .form-group {
+        margin-bottom: 12px;
+      }
+      .label-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 5px;
+      }
+      label {
+        display: block;
+        font-weight: 600;
+        font-size: 0.84rem;
+        color: #1e293b;
+      }
+      .val-chip {
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: var(--brand);
+        background: var(--brand-soft);
+        padding: 2px 8px;
+        border-radius: 6px;
+      }
+
+      input[type="number"],
+      input[type="file"],
+      select {
+        width: 100%;
+        padding: 9px 11px;
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-sm);
+        font-size: 0.9rem;
+        background: var(--surface-solid);
+        color: var(--ink);
+        transition:
+          border-color 0.15s,
+          box-shadow 0.15s;
+      }
+      input[type="number"]:focus,
+      input[type="file"]:focus,
+      select:focus {
+        outline: none;
+        border-color: var(--brand);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.14);
+      }
+      input[type="file"] {
+        padding: 7px;
+        font-size: 0.82rem;
+        background: var(--surface-alt);
+      }
+
+      input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 6px;
+        border-radius: 999px;
+        background: #e2e8f0;
+        outline: none;
+        cursor: pointer;
+        margin: 4px 0;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--brand);
+        border: 2px solid #fff;
+        box-shadow: 0 2px 6px rgba(79, 70, 229, 0.45);
+        transition: transform 0.12s;
+      }
+      input[type="range"]::-webkit-slider-thumb:hover {
+        transform: scale(1.12);
+      }
+
+      .row {
+        display: flex;
+        gap: 10px;
+      }
+      .row > div {
+        flex: 1;
+      }
+
+      button {
+        width: 100%;
+        padding: 10px 13px;
+        border: none;
+        border-radius: var(--radius-sm);
+        font-size: 0.88rem;
+        font-weight: 700;
+        cursor: pointer;
+        color: #fff;
+        background: var(--brand);
+        box-shadow: 0 4px 12px -2px rgba(79, 70, 229, 0.35);
+        transition:
+          transform 0.1s,
+          background 0.15s,
+          opacity 0.15s;
+        margin-top: 6px;
+      }
+      button:hover:not(:disabled) {
+        background: var(--brand-hover);
+      }
+      button:active:not(:disabled) {
+        transform: scale(0.99);
+      }
+      button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      .btn-reset-all {
+        width: auto;
+        margin-top: 0;
+        padding: 7px 14px;
+        font-size: 0.8rem;
+        border-radius: 999px;
+        background: #fff1f2;
+        color: var(--reset);
+        border: 1px solid #fecdd3;
+        box-shadow: none;
+      }
+      .btn-reset-all:hover:not(:disabled) {
+        background: var(--reset);
+        color: #fff;
+        border-color: var(--reset);
+      }
+
+      .btn-ai {
+        background: linear-gradient(135deg, var(--ai) 0%, #6366f1 100%);
+        box-shadow: 0 6px 16px -4px rgba(124, 58, 237, 0.45);
+      }
+      .btn-ai:hover:not(:disabled) {
+        background: linear-gradient(135deg, var(--ai-hover) 0%, #4f46e5 100%);
+      }
+
+      .btn-jpg {
+        background: var(--jpg);
+        box-shadow: 0 6px 16px -4px rgba(5, 150, 105, 0.38);
+      }
+      .btn-jpg:hover:not(:disabled) {
+        background: var(--jpg-hover);
+      }
+
+      .btn-pdf {
+        background: var(--pdf);
+        box-shadow: 0 6px 16px -4px rgba(220, 38, 38, 0.38);
+      }
+      .btn-pdf:hover:not(:disabled) {
+        background: var(--pdf-hover);
+      }
+
+      .btn-secondary {
+        background: #334155;
+        box-shadow: none;
+      }
+      .btn-secondary:hover:not(:disabled) {
+        background: #1e293b;
+      }
+
+      .btn-outline {
+        background: var(--surface-solid);
+        color: #334155;
+        border: 1px solid var(--border-strong);
+        box-shadow: var(--shadow-sm);
+        font-weight: 600;
+        padding: 7px 10px;
+        font-size: 0.8rem;
+      }
+      .btn-outline:hover:not(:disabled) {
+        background: var(--surface-alt);
+      }
+
+      .bg-swatches {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .swatch {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 2px solid #cbd5e1;
+        cursor: pointer;
+        transition: transform 0.12s;
+      }
+      .swatch:hover {
+        transform: scale(1.08);
+      }
+      .swatch.active {
+        outline: 3px solid var(--brand);
+        outline-offset: 2px;
+        border-color: #fff;
+      }
+
+      .status-banner {
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 7px 10px;
+        border-radius: var(--radius-sm);
+        background: var(--ai-soft);
+        color: #5b21b6;
+        border: 1px solid #ddd6fe;
+        margin-top: 7px;
+        text-align: center;
+      }
+
+      .crop-stage-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: repeating-conic-gradient(#e2e8f0 0% 25%, #f8fafc 0% 50%)
+          50% / 16px 16px;
+        padding: 14px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+      }
+      #cropCanvas {
+        background: #ffffff;
+        border: 2px solid var(--brand);
+        border-radius: 8px;
+        cursor: grab;
+        touch-action: none;
+        max-width: 100%;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+      }
+      #cropCanvas:active {
+        cursor: grabbing;
+      }
+
+      .legend-box {
+        background: var(--surface-alt);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 10px 12px;
+        margin-top: 12px;
+        font-size: 0.77rem;
+        line-height: 1.55;
+      }
+
+      .a4-stage-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: linear-gradient(145deg, #e2e8f0 0%, #cbd5e1 100%);
+        padding: 20px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-strong);
+      }
+      #a4Canvas {
+        width: 100%;
+        max-width: 430px;
+        height: auto;
+        background: #ffffff;
+        border-radius: 3px;
+        box-shadow: var(--shadow-lg);
+      }
+      .export-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 14px;
+      }
+      @media (max-width: 600px) {
+        .export-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .export-grid button {
+        margin-top: 0;
+      }
+
+      .hint {
+        font-size: 0.76rem;
+        color: var(--ink-muted);
+        margin-top: 6px;
+        line-height: 1.45;
+      }
+
+      @media print {
+        @page {
+          size: A4 portrait;
+          margin: 0;
+        }
+        body {
+          margin: 0;
+          padding: 0;
+          background: #ffffff;
+        }
+        body * {
+          visibility: hidden;
+        }
+        #a4Canvas,
+        #a4Canvas * {
+          visibility: visible;
+        }
+        #a4Canvas {
+          position: fixed;
+          left: 0;
+          top: 0;
+          width: 210mm !important;
+          height: 297mm !important;
+          max-width: none !important;
+          box-shadow: none !important;
+          border-radius: 0 !important;
+          margin: 0 !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand-wrap">
+        <div class="brand-logo">🪪</div>
+        <div>
+          <h1>استوديو صور المعاملات والجوازات</h1>
+          <p>
+            إعداد الصور، ضبط نسب الوجه والفيزا، وتوليد ورقة A4 بدقة طباعة 300
+            DPI
+          </p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span class="pill">A4 • 300 DPI</span>
+        <span class="pill muted">معالجة محلية على الجهاز</span>
+        <button
+          type="button"
+          class="btn-reset-all"
+          onclick="resetAllStudio()"
+          title="إعادة تعيين كل الصور والإعدادات إلى البداية"
+        >
+          ↺ إعادة تعيين شامل
+        </button>
+      </div>
+    </header>
+
+    <main class="grid-main">
+      <!-- العمود 1: الصورة، الخلفية، الإضاءة، والقياسات -->
+      <section class="card">
+        <h2 class="card-title">
+          <span class="step-badge">1</span> الصورة، الخلفية والإضاءة
+        </h2>
+
+        <div class="form-group">
+          <label>اختر صورة أو التقطها بالكاميرا:</label>
+          <input type="file" id="imageInput" accept="image/*" capture="user" />
+        </div>
+
+        <div class="form-group">
+          <button
+            type="button"
+            class="btn-ai"
+            id="aiRemoveBgBtn"
+            onclick="runAiBackgroundRemoval()"
+          >
+            ✨ إزالة الخلفية تلقائياً (AI)
+          </button>
+          <button
+            type="button"
+            class="btn-outline"
+            id="restoreOrigBgBtn"
+            onclick="restoreOriginalBg()"
+            style="display: none"
+          >
+            إرجاع الخلفية الأصلية
+          </button>
+          <div id="aiStatus" class="status-banner" style="display: none"></div>
+        </div>
+
+        <div class="form-group">
+          <label style="margin-bottom: 7px">لون الخلفية:</label>
+          <div class="bg-swatches">
+            <div
+              class="swatch active"
+              data-color="#ffffff"
+              style="background: #ffffff"
+              title="أبيض"
+            ></div>
+            <div
+              class="swatch"
+              data-color="#dbeafe"
+              style="background: #dbeafe"
+              title="أزرق فاتح"
+            ></div>
+            <div
+              class="swatch"
+              data-color="#f1f5f9"
+              style="background: #f1f5f9"
+              title="رمادي فاتح"
+            ></div>
+            <input
+              type="color"
+              id="bgColorPicker"
+              value="#ffffff"
+              style="
+                width: 44px;
+                height: 32px;
+                padding: 2px;
+                border-radius: 8px;
+                border: 1px solid var(--border-strong);
+                cursor: pointer;
+              "
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label-row">
+            <label>تبييض الخلفية الفاتحة</label>
+            <span class="val-chip" id="cleanVal">0</span>
+          </div>
+          <input
+            type="range"
+            id="bgCleanThreshold"
+            min="0"
+            max="80"
+            value="0"
+          />
+        </div>
+
+        <div class="section-sub">تعديل إضاءة الصورة والوجه</div>
+
+        <div class="form-group">
+          <div class="label-row">
+            <label>السطوع</label>
+            <span class="val-chip" id="brightVal">100%</span>
+          </div>
+          <input
+            type="range"
+            id="brightnessRange"
+            min="70"
+            max="145"
+            value="100"
+          />
+        </div>
+
+        <div class="form-group">
+          <div class="label-row">
+            <label>التباين</label>
+            <span class="val-chip" id="contrastVal">100%</span>
+          </div>
+          <input
+            type="range"
+            id="contrastRange"
+            min="75"
+            max="140"
+            value="100"
+          />
+        </div>
+
+        <div class="form-group">
+          <div class="label-row">
+            <label>تشبع الألوان</label>
+            <span class="val-chip" id="satVal">100%</span>
+          </div>
+          <input
+            type="range"
+            id="saturationRange"
+            min="70"
+            max="130"
+            value="100"
+          />
+        </div>
+
+        <button type="button" class="btn-outline" onclick="resetLighting()">
+          إعادة ضبط الإضاءة
+        </button>
+
+        <div class="section-sub">قياسات الصورة وتوزيع A4</div>
+
+        <div class="form-group">
+          <label style="margin-bottom: 5px">قالب قياس جاهز (سم):</label>
+          <select id="presetSelect">
+            <option value="custom">تخصيص يدوي</option>
+            <option value="3.5x4.5" selected>
+              جواز سفر / فيزا شنغن (3.5 × 4.5 سم)
+            </option>
+            <option value="4x6">صور شخصية كبيرة (4 × 6 سم)</option>
+            <option value="5x5">فيزا مربعة (5 × 5 سم)</option>
+            <option value="2.5x3.5">صور مصغرة (2.5 × 3.5 سم)</option>
+          </select>
+        </div>
+
+        <div class="row form-group">
+          <div>
+            <label style="margin-bottom: 5px">العرض (سم):</label>
+            <input type="number" id="widthCm" value="3.5" step="0.1" min="1" />
+          </div>
+          <div>
+            <label style="margin-bottom: 5px">الارتفاع (سم):</label>
+            <input type="number" id="heightCm" value="4.5" step="0.1" min="1" />
+          </div>
+        </div>
+
+        <div class="row form-group">
+          <div>
+            <label style="margin-bottom: 5px">العدد المطلوب:</label>
+            <input type="number" id="photoCount" value="8" min="1" max="60" />
+          </div>
+          <div>
+            <label style="margin-bottom: 5px">المسافة (ملم):</label>
+            <input type="number" id="gapMm" value="3" min="0" max="20" />
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0">
+          <label
+            style="
+              display: flex;
+              align-items: center;
+              gap: 7px;
+              cursor: pointer;
+            "
+          >
+            <input type="checkbox" id="cutLines" checked />
+            إظهار إطار خفيف للقص بالمقص في A4
+          </label>
+        </div>
+      </section>
+
+      <!-- العمود 2: ضبط الوجه ونسب الرأس -->
+      <section class="card">
+        <h2 class="card-title">
+          <span class="step-badge">2</span> ضبط الوجه ونسب الرأس
+        </h2>
+
+        <div class="form-group">
+          <label style="margin-bottom: 5px">معيار نسبة الرأس / الفيزا:</label>
+          <select id="headRuleSelect">
+            <option value="germany_schengen" selected>
+              فيزا ألمانيا / شنغن (الرأس ~75%)
+            </option>
+            <option value="standard_70">نسبة قياسية عامة (الرأس ~70%)</option>
+            <option value="custom_ratio">نسبة مخصصة يدوياً</option>
+            <option value="none">إخفاء خطوط النسب</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <div class="label-row">
+            <label>نسبة ارتفاع الرأس من الصورة</label>
+            <span class="val-chip" id="headRatioLabel">75%</span>
+          </div>
+          <input
+            type="range"
+            id="headRatioRange"
+            min="45"
+            max="90"
+            value="75"
+          />
+        </div>
+
+        <div class="crop-stage-wrap">
+          <canvas id="cropCanvas" width="240" height="308"></canvas>
+          <div class="hint" style="text-align: center">
+            اسحب الصورة لتحريك الوجه بحيث يقع الرأس بين الخط العلوي والسفلي.
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 12px">
+          <div class="label-row">
+            <label>التكبير / التصغير</label>
+            <span class="val-chip" id="zoomLabel">100%</span>
+          </div>
+          <input
+            type="range"
+            id="zoomRange"
+            min="0.5"
+            max="3"
+            step="0.02"
+            value="1"
+          />
+        </div>
+
+        <button type="button" class="btn-secondary" onclick="resetCrop()">
+          إعادة ضبط التمركز
+        </button>
+
+        <div class="legend-box">
+          <div>
+            <span style="color: #dc2626; font-weight: 800">—</span> خط أعلى
+            الرأس (Top of Head)
+          </div>
+          <div>
+            <span style="color: #059669; font-weight: 800">- -</span> خط مستوى
+            العينين (Eye Line)
+          </div>
+          <div>
+            <span style="color: #dc2626; font-weight: 800">—</span> خط أسفل
+            الذقن (Chin Line)
+          </div>
+          <div class="hint" style="margin-top: 5px">
+            خطوط النسب للمحاذاة فقط ولا تظهر في ورقة A4.
+          </div>
+        </div>
+      </section>
+
+      <!-- العمود 3: معاينة A4 وخيارات الإخراج الثلاثة -->
+      <section class="card preview-col">
+        <h2 class="card-title">
+          <span class="step-badge">3</span> معاينة ورقة A4 والتصدير
+        </h2>
+
+        <div class="a4-stage-wrap">
+          <canvas id="a4Canvas"></canvas>
+        </div>
+
+        <div class="export-grid">
+          <button type="button" class="btn-jpg" onclick="downloadJpgA4()">
+            🖼️ حفظ JPG (A4)
+          </button>
+          <button
+            type="button"
+            class="btn-pdf"
+            id="pdfBtn"
+            onclick="downloadPdfA4()"
+          >
+            📄 حفظ PDF (A4)
+          </button>
+          <button type="button" onclick="printA4Direct()">
+            🖨️ اطبعها مباشرة
+          </button>
+        </div>
+
+        <div
+          id="exportStatus"
+          class="status-banner"
+          style="
+            display: none;
+            background: #f0fdf4;
+            color: #166534;
+            border-color: #bbf7d0;
+          "
+        ></div>
+
+        <div class="hint">
+          * عند الطباعة من ملف PDF أو الطباعة المباشرة، اختر حجم الورق
+          <b>A4</b> والمقياس <b>100% / Actual Size</b> لضمان مطابقة القياسات
+          بالمسطرة.
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const imageInput = document.getElementById("imageInput");
+      const aiRemoveBgBtn = document.getElementById("aiRemoveBgBtn");
+      const restoreOrigBgBtn = document.getElementById("restoreOrigBgBtn");
+      const aiStatus = document.getElementById("aiStatus");
+      const exportStatus = document.getElementById("exportStatus");
+
+      const presetSelect = document.getElementById("presetSelect");
+      const widthCmInput = document.getElementById("widthCm");
+      const heightCmInput = document.getElementById("heightCm");
+      const photoCountInput = document.getElementById("photoCount");
+      const gapMmInput = document.getElementById("gapMm");
+      const cutLinesInput = document.getElementById("cutLines");
+
+      const headRuleSelect = document.getElementById("headRuleSelect");
+      const headRatioRange = document.getElementById("headRatioRange");
+      const headRatioLabel = document.getElementById("headRatioLabel");
+
+      const zoomRange = document.getElementById("zoomRange");
+      const zoomLabel = document.getElementById("zoomLabel");
+
+      const bgColorPicker = document.getElementById("bgColorPicker");
+      const bgCleanThreshold = document.getElementById("bgCleanThreshold");
+      const cleanVal = document.getElementById("cleanVal");
+      const swatches = document.querySelectorAll(".swatch");
+
+      const brightnessRange = document.getElementById("brightnessRange");
+      const contrastRange = document.getElementById("contrastRange");
+      const saturationRange = document.getElementById("saturationRange");
+      const brightVal = document.getElementById("brightVal");
+      const contrastVal = document.getElementById("contrastVal");
+      const satVal = document.getElementById("satVal");
+
+      const cropCanvas = document.getElementById("cropCanvas");
+      const cropCtx = cropCanvas.getContext("2d");
+      const a4Canvas = document.getElementById("a4Canvas");
+      const a4Ctx = a4Canvas.getContext("2d");
+
+      const DPI = 300;
+      const CM_TO_PX = DPI / 2.54;
+      const A4_WIDTH_PX = Math.round(21.0 * CM_TO_PX);
+      const A4_HEIGHT_PX = Math.round(29.7 * CM_TO_PX);
+      a4Canvas.width = A4_WIDTH_PX;
+      a4Canvas.height = A4_HEIGHT_PX;
+
+      let originalImg = null;
+      let cutoutSubjectCanvas = null;
+      let composedImgCanvas = null;
+
+      let scale = 1;
+      let offsetX = 0;
+      let offsetY = 0;
+      let isDragging = false;
+      let dragStartX = 0;
+      let dragStartY = 0;
+      let selfieSegmentation = null;
+
+      function showExportMsg(msg) {
+        exportStatus.textContent = msg;
+        exportStatus.style.display = "block";
+        clearTimeout(showExportMsg._t);
+        showExportMsg._t = setTimeout(() => {
+          exportStatus.style.display = "none";
+        }, 4000);
+      }
+
+      function getAspectRatio() {
+        const w = parseFloat(widthCmInput.value) || 3.5;
+        const h = parseFloat(heightCmInput.value) || 4.5;
+        return w / h;
+      }
+
+      function resizeCropBox() {
+        const ratio = getAspectRatio();
+        const baseW = 240;
+        const baseH = Math.min(340, Math.max(150, Math.round(baseW / ratio)));
+        cropCanvas.width = baseW;
+        cropCanvas.height = baseH;
+        renderAll();
+      }
+
+      function resetCrop() {
+        if (!originalImg) {
+          scale = 1;
+          offsetX = 0;
+          offsetY = 0;
+          zoomRange.value = 1;
+          zoomLabel.textContent = "100%";
+          renderAll();
+          return;
+        }
+        const fitScale = Math.max(
+          cropCanvas.width / originalImg.width,
+          cropCanvas.height / originalImg.height,
+        );
+        scale = fitScale;
+        zoomRange.value = Math.min(3, Math.max(0.5, fitScale.toFixed(2)));
+        zoomLabel.textContent = Math.round(scale * 100) + "%";
+        offsetX = (cropCanvas.width - originalImg.width * scale) / 2;
+        offsetY = (cropCanvas.height - originalImg.height * scale) / 2;
+        renderAll();
+      }
+
+      function resetLighting() {
+        brightnessRange.value = 100;
+        contrastRange.value = 100;
+        saturationRange.value = 100;
+        renderAll();
+      }
+
+      function resetAllStudio() {
+        imageInput.value = "";
+        originalImg = null;
+        cutoutSubjectCanvas = null;
+        composedImgCanvas = null;
+        restoreOrigBgBtn.style.display = "none";
+        aiStatus.style.display = "none";
+        exportStatus.style.display = "none";
+
+        bgColorPicker.value = "#ffffff";
+        swatches.forEach((sw, idx) => {
+          sw.classList.toggle("active", idx === 0);
+        });
+        bgCleanThreshold.value = 0;
+
+        brightnessRange.value = 100;
+        contrastRange.value = 100;
+        saturationRange.value = 100;
+
+        presetSelect.value = "3.5x4.5";
+        widthCmInput.value = 3.5;
+        heightCmInput.value = 4.5;
+        photoCountInput.value = 8;
+        gapMmInput.value = 3;
+        cutLinesInput.checked = true;
+
+        headRuleSelect.value = "germany_schengen";
+        headRatioRange.value = 75;
+        headRatioLabel.textContent = "75%";
+
+        scale = 1;
+        offsetX = 0;
+        offsetY = 0;
+        zoomRange.value = 1;
+        zoomLabel.textContent = "100%";
+
+        resizeCropBox();
+        showExportMsg("تمت إعادة تعيين جميع الصور والإعدادات إلى وضع البداية.");
+      }
+
+      function restoreOriginalBg() {
+        cutoutSubjectCanvas = null;
+        restoreOrigBgBtn.style.display = "none";
+        aiStatus.style.display = "none";
+        renderAll();
+      }
+
+      async function runAiBackgroundRemoval() {
+        if (!originalImg) {
+          alert("يرجى اختيار أو التقاط صورة شخصية أولاً.");
+          return;
+        }
+        if (typeof SelfieSegmentation === "undefined") {
+          alert(
+            "تعذر تحميل مكتبة عزل الخلفية. تأكد من الاتصال بالإنترنت أو استخدم شريط التبييض.",
+          );
+          return;
+        }
+
+        aiRemoveBgBtn.disabled = true;
+        aiStatus.style.display = "block";
+        aiStatus.textContent = "جاري تحليل الصورة وعزل الخلفية...";
+
+        try {
+          if (!selfieSegmentation) {
+            selfieSegmentation = new SelfieSegmentation({
+              locateFile: (file) =>
+                `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
+            });
+            selfieSegmentation.setOptions({
+              modelSelection: 1,
+              selfieMode: false,
+            });
+          }
+
+          await new Promise((resolve) => {
+            selfieSegmentation.onResults((results) => {
+              const w = originalImg.width;
+              const h = originalImg.height;
+              const outCanvas = document.createElement("canvas");
+              outCanvas.width = w;
+              outCanvas.height = h;
+              const oCtx = outCanvas.getContext("2d");
+
+              oCtx.save();
+              oCtx.filter = "blur(1.2px)";
+              oCtx.drawImage(results.segmentationMask, 0, 0, w, h);
+              oCtx.filter = "none";
+              oCtx.globalCompositeOperation = "source-in";
+              oCtx.drawImage(originalImg, 0, 0, w, h);
+              oCtx.restore();
+
+              cutoutSubjectCanvas = outCanvas;
+              resolve();
+            });
+            selfieSegmentation.send({ image: originalImg });
+          });
+
+          restoreOrigBgBtn.style.display = "block";
+          aiStatus.textContent =
+            "تم عزل الخلفية بنجاح! يمكنك تغيير لونها أو تعديل الإضاءة.";
+          renderAll();
+        } catch (err) {
+          console.error(err);
+          aiStatus.textContent =
+            "تعذر إتمام العزل، جرب صورة أوضح أو استخدم شريط التبييض.";
+        } finally {
+          aiRemoveBgBtn.disabled = false;
+        }
+      }
+
+      function buildComposedImage() {
+        if (!originalImg) {
+          composedImgCanvas = null;
+          brightVal.textContent = brightnessRange.value + "%";
+          contrastVal.textContent = contrastRange.value + "%";
+          satVal.textContent = saturationRange.value + "%";
+          cleanVal.textContent = bgCleanThreshold.value;
+          return;
+        }
+
+        const w = originalImg.width;
+        const h = originalImg.height;
+
+        const bright = brightnessRange.value;
+        const contrast = contrastRange.value;
+        const sat = saturationRange.value;
+        brightVal.textContent = bright + "%";
+        contrastVal.textContent = contrast + "%";
+        satVal.textContent = sat + "%";
+
+        const thresh = parseInt(bgCleanThreshold.value, 10);
+        cleanVal.textContent = thresh;
+
+        const subjectLayer = document.createElement("canvas");
+        subjectLayer.width = w;
+        subjectLayer.height = h;
+        const sCtx = subjectLayer.getContext("2d");
+        sCtx.filter = `brightness(${bright}%) contrast(${contrast}%) saturate(${sat}%)`;
+        sCtx.drawImage(cutoutSubjectCanvas || originalImg, 0, 0, w, h);
+        sCtx.filter = "none";
+
+        if (!cutoutSubjectCanvas && thresh > 0) {
+          const imgData = sCtx.getImageData(0, 0, w, h);
+          const data = imgData.data;
+          const bgHex = bgColorPicker.value;
+          const bgR = parseInt(bgHex.slice(1, 3), 16);
+          const bgG = parseInt(bgHex.slice(3, 5), 16);
+          const bgB = parseInt(bgHex.slice(5, 7), 16);
+          const minChannel = 255 - thresh * 1.4;
+
+          for (let i = 0; i < data.length; i += 4) {
+            const r = data[i],
+              g = data[i + 1],
+              b = data[i + 2];
+            if (
+              r >= minChannel &&
+              g >= minChannel &&
+              b >= minChannel &&
+              Math.abs(r - b) < 25
+            ) {
+              data[i] = bgR;
+              data[i + 1] = bgG;
+              data[i + 2] = bgB;
+            }
+          }
+          sCtx.putImageData(imgData, 0, 0);
+        }
+
+        const finalCanvas = document.createElement("canvas");
+        finalCanvas.width = w;
+        finalCanvas.height = h;
+        const fCtx = finalCanvas.getContext("2d");
+        fCtx.fillStyle = bgColorPicker.value;
+        fCtx.fillRect(0, 0, w, h);
+        fCtx.drawImage(subjectLayer, 0, 0);
+
+        composedImgCanvas = finalCanvas;
+      }
+
+      function drawHeadGuides() {
+        const rule = headRuleSelect.value;
+        if (rule === "none") return;
+
+        const w = cropCanvas.width;
+        const h = cropCanvas.height;
+        const headFrac = (parseInt(headRatioRange.value, 10) || 75) / 100;
+
+        const headHeightPx = h * headFrac;
+        const topHeadY = Math.max(h * 0.06, (h - headHeightPx) * 0.42);
+        const chinY = Math.min(h * 0.94, topHeadY + headHeightPx);
+        const eyeY = topHeadY + (chinY - topHeadY) * 0.46;
+
+        cropCtx.fillStyle = "rgba(15, 23, 42, 0.10)";
+        cropCtx.fillRect(0, 0, w, topHeadY);
+        cropCtx.fillRect(0, chinY, w, h - chinY);
+
+        cropCtx.strokeStyle = "rgba(79, 70, 229, 0.45)";
+        cropCtx.lineWidth = 1;
+        cropCtx.setLineDash([4, 4]);
+        cropCtx.beginPath();
+        cropCtx.moveTo(w / 2, 0);
+        cropCtx.lineTo(w / 2, h);
+        cropCtx.stroke();
+
+        cropCtx.strokeStyle = "#dc2626";
+        cropCtx.lineWidth = 1.5;
+        cropCtx.setLineDash([]);
+        cropCtx.beginPath();
+        cropCtx.moveTo(0, topHeadY);
+        cropCtx.lineTo(w, topHeadY);
+        cropCtx.moveTo(0, chinY);
+        cropCtx.lineTo(w, chinY);
+        cropCtx.stroke();
+
+        cropCtx.strokeStyle = "#059669";
+        cropCtx.lineWidth = 1.5;
+        cropCtx.setLineDash([5, 3]);
+        cropCtx.beginPath();
+        cropCtx.moveTo(0, eyeY);
+        cropCtx.lineTo(w, eyeY);
+        cropCtx.stroke();
+        cropCtx.setLineDash([]);
+
+        cropCtx.font = "bold 10px system-ui";
+        cropCtx.textAlign = "right";
+        cropCtx.fillStyle = "#dc2626";
+        cropCtx.fillText(
+          `أعلى الرأس (${Math.round(headFrac * 100)}%)`,
+          w - 6,
+          topHeadY - 3,
+        );
+        cropCtx.fillText("الذقن", w - 6, chinY - 3);
+
+        cropCtx.fillStyle = "#047857";
+        cropCtx.fillText("العينان", w - 6, eyeY - 3);
+      }
+
+      function drawCropPreview() {
+        cropCtx.fillStyle = bgColorPicker.value;
+        cropCtx.fillRect(0, 0, cropCanvas.width, cropCanvas.height);
+
+        if (!composedImgCanvas) {
+          cropCtx.fillStyle = "#64748b";
+          cropCtx.font = "14px system-ui";
+          cropCtx.textAlign = "center";
+          cropCtx.fillText(
+            "اختر صورة أولاً",
+            cropCanvas.width / 2,
+            cropCanvas.height / 2,
+          );
+          drawHeadGuides();
+          return;
+        }
+
+        cropCtx.drawImage(
+          composedImgCanvas,
+          offsetX,
+          offsetY,
+          composedImgCanvas.width * scale,
+          composedImgCanvas.height * scale,
+        );
+        drawHeadGuides();
+      }
+
+      function getCroppedPhotoCanvas(targetW, targetH) {
+        const out = document.createElement("canvas");
+        out.width = targetW;
+        out.height = targetH;
+        const oCtx = out.getContext("2d");
+        oCtx.fillStyle = bgColorPicker.value;
+        oCtx.fillRect(0, 0, targetW, targetH);
+
+        if (!composedImgCanvas) return out;
+
+        const ratioX = targetW / cropCanvas.width;
+        const ratioY = targetH / cropCanvas.height;
+
+        oCtx.drawImage(
+          composedImgCanvas,
+          offsetX * ratioX,
+          offsetY * ratioY,
+          composedImgCanvas.width * scale * ratioX,
+          composedImgCanvas.height * scale * ratioY,
+        );
+        return out;
+      }
+
+      function drawA4Sheet() {
+        a4Ctx.fillStyle = "#ffffff";
+        a4Ctx.fillRect(0, 0, A4_WIDTH_PX, A4_HEIGHT_PX);
+
+        if (!composedImgCanvas) return;
+
+        const wCm = parseFloat(widthCmInput.value) || 3.5;
+        const hCm = parseFloat(heightCmInput.value) || 4.5;
+        const count = parseInt(photoCountInput.value, 10) || 1;
+        const gapMm = parseFloat(gapMmInput.value) || 0;
+        const drawBorder = cutLinesInput.checked;
+
+        const photoW = Math.round(wCm * CM_TO_PX);
+        const photoH = Math.round(hCm * CM_TO_PX);
+        const gapPx = Math.round((gapMm / 10) * CM_TO_PX);
+        const marginPx = Math.round(1.0 * CM_TO_PX);
+
+        const singlePhoto = getCroppedPhotoCanvas(photoW, photoH);
+
+        let x = marginPx;
+        let y = marginPx;
+
+        for (let i = 0; i < count; i++) {
+          if (x + photoW > A4_WIDTH_PX - marginPx) {
+            x = marginPx;
+            y += photoH + gapPx;
+          }
+          if (y + photoH > A4_HEIGHT_PX - marginPx) break;
+
+          a4Ctx.drawImage(singlePhoto, x, y, photoW, photoH);
+          if (drawBorder) {
+            a4Ctx.strokeStyle = "#94a3b8";
+            a4Ctx.lineWidth = 2;
+            a4Ctx.strokeRect(x, y, photoW, photoH);
+          }
+          x += photoW + gapPx;
+        }
+      }
+
+      function renderAll() {
+        buildComposedImage();
+        drawCropPreview();
+        drawA4Sheet();
+      }
+
+      function downloadJpgA4() {
+        if (!originalImg) {
+          alert("يرجى اختيار صورة شخصية أولاً.");
+          return;
+        }
+        a4Canvas.toBlob(
+          (blob) => {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.download = `passport-A4-${widthCmInput.value}x${heightCmInput.value}cm.jpg`;
+            link.href = url;
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 5000);
+            showExportMsg("تم إنشاء ملف JPG بدقة 300 DPI وبدء التحميل.");
+          },
+          "image/jpeg",
+          0.96,
+        );
+      }
+
+      function downloadPdfA4() {
+        if (!originalImg) {
+          alert("يرجى اختيار صورة شخصية أولاً.");
+          return;
+        }
+
+        const pdfBtn = document.getElementById("pdfBtn");
+        pdfBtn.disabled = true;
+        showExportMsg("جاري تجهيز ملف PDF بمقاس A4...");
+
+        a4Canvas.toBlob(
+          async (jpegBlob) => {
+            try {
+              const jpegBytes = new Uint8Array(await jpegBlob.arrayBuffer());
+              const w = A4_WIDTH_PX;
+              const h = A4_HEIGHT_PX;
+              const pageW = 595.28;
+              const pageH = 841.89;
+
+              const encoder = new TextEncoder();
+              const chunks = [];
+              const offsets = [];
+              let totalLen = 0;
+
+              function pushStr(str) {
+                const bytes = encoder.encode(str);
+                chunks.push(bytes);
+                totalLen += bytes.length;
+              }
+              function pushBytes(bytes) {
+                chunks.push(bytes);
+                totalLen += bytes.length;
+              }
+
+              pushStr("%PDF-1.4\n");
+
+              offsets[1] = totalLen;
+              pushStr("1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n");
+
+              offsets[2] = totalLen;
+              pushStr(
+                "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n",
+              );
+
+              offsets[3] = totalLen;
+              pushStr(
+                `3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageW} ${pageH}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>\nendobj\n`,
+              );
+
+              offsets[4] = totalLen;
+              pushStr(
+                `4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${w} /Height ${h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpegBytes.length} >>\nstream\n`,
+              );
+              pushBytes(jpegBytes);
+              pushStr("\nendstream\nendobj\n");
+
+              const contentStream = `q ${pageW} 0 0 ${pageH} 0 0 cm /Im0 Do Q\n`;
+              const contentBytes = encoder.encode(contentStream);
+              offsets[5] = totalLen;
+              pushStr(
+                `5 0 obj\n<< /Length ${contentBytes.length} >>\nstream\n`,
+              );
+              pushBytes(contentBytes);
+              pushStr("endstream\nendobj\n");
+
+              const xrefOffset = totalLen;
+              pushStr(`xref\n0 6\n`);
+              pushStr("0000000000 65535 f \n");
+              for (let i = 1; i <= 5; i++) {
+                pushStr(`${String(offsets[i]).padStart(10, "0")} 00000 n \n`);
+              }
+
+              pushStr(
+                `trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`,
+              );
+
+              const pdfBlob = new Blob(chunks, { type: "application/pdf" });
+              const url = URL.createObjectURL(pdfBlob);
+              const link = document.createElement("a");
+              link.download = `passport-A4-${widthCmInput.value}x${heightCmInput.value}cm.pdf`;
+              link.href = url;
+              link.click();
+              setTimeout(() => URL.revokeObjectURL(url), 5000);
+              showExportMsg("تم حفظ ملف PDF بمقاس A4 بنجاح.");
+            } catch (err) {
+              console.error(err);
+              alert("حدث خطأ أثناء إنشاء ملف PDF.");
+            } finally {
+              pdfBtn.disabled = false;
+            }
+          },
+          "image/jpeg",
+          0.95,
+        );
+      }
+
+      function printA4Direct() {
+        if (!originalImg) {
+          alert("يرجى اختيار صورة شخصية أولاً.");
+          return;
+        }
+        window.print();
+      }
+
+      imageInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const img = new Image();
+          img.onload = () => {
+            originalImg = img;
+            cutoutSubjectCanvas = null;
+            restoreOrigBgBtn.style.display = "none";
+            aiStatus.style.display = "none";
+            resetCrop();
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      headRuleSelect.addEventListener("change", () => {
+        const val = headRuleSelect.value;
+        if (val === "germany_schengen") headRatioRange.value = 75;
+        else if (val === "standard_70") headRatioRange.value = 70;
+        headRatioLabel.textContent = headRatioRange.value + "%";
+        renderAll();
+      });
+
+      headRatioRange.addEventListener("input", () => {
+        headRuleSelect.value = "custom_ratio";
+        headRatioLabel.textContent = headRatioRange.value + "%";
+        renderAll();
+      });
+
+      presetSelect.addEventListener("change", (e) => {
+        if (e.target.value !== "custom") {
+          const [w, h] = e.target.value.split("x");
+          widthCmInput.value = w;
+          heightCmInput.value = h;
+          resizeCropBox();
+        }
+      });
+
+      [widthCmInput, heightCmInput].forEach((el) => {
+        el.addEventListener("input", () => {
+          presetSelect.value = "custom";
+          resizeCropBox();
+        });
+      });
+
+      [
+        photoCountInput,
+        gapMmInput,
+        cutLinesInput,
+        bgCleanThreshold,
+        brightnessRange,
+        contrastRange,
+        saturationRange,
+      ].forEach((el) => el.addEventListener("input", renderAll));
+
+      swatches.forEach((sw) => {
+        sw.addEventListener("click", () => {
+          swatches.forEach((s) => s.classList.remove("active"));
+          sw.classList.add("active");
+          bgColorPicker.value = sw.dataset.color;
+          renderAll();
+        });
+      });
+
+      bgColorPicker.addEventListener("input", () => {
+        swatches.forEach((s) => s.classList.remove("active"));
+        renderAll();
+      });
+
+      zoomRange.addEventListener("input", (e) => {
+        const newScale = parseFloat(e.target.value);
+        const centerX = cropCanvas.width / 2;
+        const centerY = cropCanvas.height / 2;
+        offsetX = centerX - ((centerX - offsetX) / scale) * newScale;
+        offsetY = centerY - ((centerY - offsetY) / scale) * newScale;
+        scale = newScale;
+        zoomLabel.textContent = Math.round(scale * 100) + "%";
+        renderAll();
+      });
+
+      function startDrag(clientX, clientY) {
+        if (!originalImg) return;
+        isDragging = true;
+        dragStartX = clientX - offsetX;
+        dragStartY = clientY - offsetY;
+      }
+      function moveDrag(clientX, clientY) {
+        if (!isDragging) return;
+        offsetX = clientX - dragStartX;
+        offsetY = clientY - dragStartY;
+        renderAll();
+      }
+      function endDrag() {
+        isDragging = false;
+      }
+
+      cropCanvas.addEventListener("mousedown", (e) =>
+        startDrag(e.clientX, e.clientY),
+      );
+      window.addEventListener("mousemove", (e) =>
+        moveDrag(e.clientX, e.clientY),
+      );
+      window.addEventListener("mouseup", endDrag);
+
+      cropCanvas.addEventListener(
+        "touchstart",
+        (e) => {
+          if (e.touches.length === 1)
+            startDrag(e.touches[0].clientX, e.touches[0].clientY);
+        },
+        { passive: true },
+      );
+      window.addEventListener(
+        "touchmove",
+        (e) => {
+          if (e.touches.length === 1 && isDragging)
+            moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+        },
+        { passive: true },
+      );
+      window.addEventListener("touchend", endDrag);
+
+      resizeCropBox();
+    </script>
+  </body>
+</html>
